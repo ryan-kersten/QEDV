@@ -11,3 +11,8 @@ class QuantumError:
             raise ValueError("All elements must be integers.")
 
         self.qubits = qubits
+
+    def __eq__(self, other):
+        if not isinstance(other, QuantumError):
+            return NotImplemented
+        return self.qubits == other.qubits

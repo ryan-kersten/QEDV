@@ -28,3 +28,8 @@ class Syndrome:
     """
     def getErrors(self):
         return self.noerror
+
+    def __eq__(self, other):
+        if not isinstance(other, Syndrome):
+            return NotImplemented
+        return self.errors == other.errors and self.noerror == other.noerror
