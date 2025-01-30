@@ -14,20 +14,20 @@ class Syndrome:
         if not all(isinstance(el, (Stabilizer)) for el in noerror):
             raise ValueError("All elements in noerror must be stabilizer.")
 
-        self.errors = error
-        self.noerror = noerror
+        self.errors = frozenset(error)
+        self.noerror = frozenset(noerror)
 
         """
         Return a set of stabilizers that detected an error
         """
     def getErrors(self):
-        return self.error
+        return set(self.error)
 
     """
     Return a set of stabilizers that haven't detected an error
     """
     def getErrors(self):
-        return self.noerror
+        return set(self.noerror)
 
     def __eq__(self, other):
         if not isinstance(other, Syndrome):

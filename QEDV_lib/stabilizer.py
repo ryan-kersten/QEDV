@@ -11,10 +11,18 @@ class Stabilizer:
         if not all(isinstance(el, (int, float)) for el in qubits):
             raise ValueError("All elements must be numbers.")
 
-        self.qubits = qubits
+        self.qubits = frozenset(qubits)
 
         """
         Return a set of ints, representing the qubits in the stabilizer
         """
     def getQubits(self):
-        return self.qubits
+        return set(self.qubits)
+
+    def __eq__(self, other):
+        if not isinstance(other, Stabilizer):
+            return NotImplemented
+        return self.qubits == other.qubits
+
+    def __hash__(self):
+        return hash(self.qubits)
