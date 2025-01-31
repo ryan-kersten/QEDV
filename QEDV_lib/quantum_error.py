@@ -16,3 +16,4 @@ class QuantumError:
         if not isinstance(other, QuantumError):
             return NotImplemented
         return self.qubits == other.qubits
+

@@ -1,6 +1,6 @@
 class Stabilizer:
 
-    def __init__(self, qubits):
+    def __init__(self, qubits, parity=0):
         """
 
         :param qubits: Set of ints, with the ints representing the qubits in the stabilizer
@@ -13,11 +13,16 @@ class Stabilizer:
 
         self.qubits = frozenset(qubits)
 
+        self.parity = parity
+
         """
         Return a set of ints, representing the qubits in the stabilizer
         """
     def getQubits(self):
         return set(self.qubits)
+
+    def getParity(self):
+        return self.parity
 
     def __eq__(self, other):
         if not isinstance(other, Stabilizer):

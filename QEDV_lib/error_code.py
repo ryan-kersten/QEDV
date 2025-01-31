@@ -4,10 +4,26 @@ from QEDV_lib.quantum_error import QuantumError
 
 class ErrorCode(ABC):
 
-    @abstractmethod
-    def getStabilizers(self) -> Stabilizer:
-        pass
+    def __init__(self):
+        self.stabilizers = {}
+        self.qubits = 0
 
-    @abstractmethod
-    def getParity(self, error: QuantumError):
+    def getStabilizers(self):
+        return self.stabilizers
+
+    def getRandomError(self):
+        return QuantumError(self.qubits)
+
+    def getParity(self, quantum_error):
+        toReturn = set()
+        for stabalizer in self.stabilizers:
+            parity = 0
+            for qubit in quantum_error.qubits:
+                if qubit in stabalizer.qubits:
+                    parity ^= 1
+            toReturn.add(Stabilizer(stabalizer.qubits,parity))
+
+        return toReturn
+
+    def getError(self):
         pass

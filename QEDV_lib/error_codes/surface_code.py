@@ -1,4 +1,4 @@
-from QEDV_lib import ErrorCode, Stabilizer
+from QEDV_lib import ErrorCode, Stabilizer, QuantumError
 
 
 class SurfaceCode(ErrorCode):
@@ -22,10 +22,5 @@ class SurfaceCode(ErrorCode):
 
     def __init__(self, distance):
         self.stabilizers = self._stabalizersFromSurface(distance)
-
-    def getStabilizers(self):
-        return self.stabilizers
-
-    def getParity(self, quantum_error):
-        return f"Computing parity for {quantum_error} in Surface Code"
+        self.qubits = distance**2
 
