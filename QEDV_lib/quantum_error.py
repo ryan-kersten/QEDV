@@ -12,6 +12,9 @@ class QuantumError:
 
         self.qubits = qubits
 
+    def __init__(self):
+        self.qubits = {}
+
     def __eq__(self, other):
         if not isinstance(other, QuantumError):
             return NotImplemented
