@@ -24,6 +24,9 @@ class Stabilizer:
     def getParity(self):
         return self.parity
 
+    def setParity(self,parity):
+        self.parity = parity
+
     def __eq__(self, other):
         if not isinstance(other, Stabilizer):
             return NotImplemented

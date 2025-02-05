@@ -21,8 +21,7 @@ class ErrorCode(ABC):
             for qubit in quantum_error.qubits:
                 if qubit in stabalizer.qubits:
                     parity ^= 1
-            toReturn.add(Stabilizer(stabalizer.qubits,parity))
-
+            toReturn.add(Stabilizer(stabalizer.getQubits(),parity))
         return toReturn
 
     def getError(self):

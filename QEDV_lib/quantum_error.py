@@ -4,7 +4,7 @@ class QuantumError:
         """
         :param qubits: Set of ints, with the ints the qubits that have an error
         """
-        if not isinstance(qubits, set):
+        if not isinstance(qubits, set) and qubits is not None :
             raise TypeError("'qubits' be a set.")
 
         if not all(isinstance(el, int) for el in qubits):
