@@ -14,6 +14,9 @@ class ErrorCode(ABC):
     def getRandomError(self):
         return QuantumError(self.qubits)
 
+    def getQubits(self):
+        return self.qubits
+
     def getParity(self, quantum_error):
         toReturn = set()
         for stabalizer in self.stabilizers:

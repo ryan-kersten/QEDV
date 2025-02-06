@@ -1,5 +1,8 @@
+import itertools
 import unittest
 from errno import errorcode
+
+import numpy as np
 
 from QEDV_lib import Stabilizer, ErrorCode, QuantumError
 from QEDV_lib.error_codes import SurfaceCode
@@ -28,4 +31,21 @@ class testStabalizer(unittest.TestCase):
     def testStabalizerSet(self):
         code = SurfaceCode(3)
         self.assertFalse(Verifier.stabalizerCheck(code, QuantumError({1}))[0])
-        self.assertTrue(Verifier.stabalizerCheck(code, QuantumError({1,2}))[0])
+        self.assertTrue(Verifier.stabalizerCheck(code, QuantumError({1,0}))[0])
+
+    def testbruteForceTest(self):
+        def generate_matrices(distance=3):
+            for matrix in itertools.product([0, 1], repeat=distance ** 2):
+                yield np.array(matrix).reshape(distance, distance)
+
+        for distance in range(3,5):
+            for possibility in generate_matrices(distance):
+                code = SurfaceCode(distance)
+                flattened = list(itertools.chain(*possibility))
+                python_int_list = [int(x) for x in flattened]
+                result_set = {index for index, value in enumerate(python_int_list) if value == 1}
+                error = QuantumError(result_set)
+                brute = Verifier._BruteForcestabilizerCheck(code, error)
+                reduction =  Verifier.stabalizerCheck(code, error)[0]
+                self.assertTrue(brute is reduction)
+

@@ -26,7 +26,7 @@ class Syndrome:
     """
     Return a set of stabilizers that haven't detected an error
     """
-    def getErrors(self):
+    def getNoErrors(self):
         return set(self.noerror)
 
     def __eq__(self, other):
