@@ -1,3 +1,5 @@
+import random
+
 from QEDV_lib import ErrorCode, Stabilizer, QuantumError
 
 
@@ -23,4 +25,12 @@ class SurfaceCode(ErrorCode):
     def __init__(self, distance):
         self.stabilizers = self._stabalizersFromSurface(distance)
         self.qubits = distance**2
+
+    def randomError(self,prob):
+        randomError = set()
+        for qubit in range(0,self.qubits):
+            if random.random() < prob:
+                randomError.add(qubit)
+        return QuantumError(randomError)
+
 
