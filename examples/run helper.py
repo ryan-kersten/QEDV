@@ -18,7 +18,6 @@ def performanceProfilingBrute(data):
         dim = data["Dimension"].to_list()[index]
         start_time = time.perf_counter()
         code = SurfaceCode(dim)
-
         result = Verifier._BruteForcestabilizerCheck(code, trial)
         end_time = time.perf_counter()
         print("ran iter", index)
@@ -26,11 +25,6 @@ def performanceProfilingBrute(data):
         bruteTime += execution_time
         data["BruteTime"][index] = execution_time
         data["Brute"][index] = True
-        if elapsedSolver > 10 or elapsedBrute > 10:
-            print("Brute Solver has taken:", bruteTime)
-            print("CALCULATING DISTANCE", dim)
-            elapsedSolver = 0
-            elapsedBrute = 0
 
 
 
@@ -108,25 +102,16 @@ if __name__ == "__main__":
     import pandas as pd
 
     print("HI")
-    data = perfomanceProfilingSurfaceCode(10,[3,9], [.1,.2])
-    dfRaw = pd.DataFrame(data)
+    start_time = time.time()
+    timeout = 60*60*3
+    i = 0
+    while time.time() - start_time < timeout:
+        i += 1
+        data = perfomanceProfilingSurfaceCode(100,[3,50], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
+        df = pd.DataFrame(data)
+        name = str(i) + "data.pkl"
 
-    df = dfRaw[dfRaw["Brute"] == False]
-
-    df_melted = df.melt(id_vars=["Dimension"], value_vars=["time", "BruteTime"],
-                           var_name="Time Type", value_name="Time")
-    # Create the bar plot
-    sns.barplot(x="Dimension", y="Time", hue="Time Type", data=df_melted)
-    plt.yscale('log')
-    # Customize the plot (optional)
-    plt.title("Comparison of Time and BruteTime by Dimension")
-    plt.xlabel("Dimension")
-    plt.ylabel("Time (Log Scale)")
-
-    # Show the plot
-    plt.show()
-    print(df.memory_usage(deep=True).sum())
-    df.to_pickle("data.pkl")
+        df.to_pickle(name)
 
 
 
