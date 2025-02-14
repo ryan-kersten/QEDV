@@ -20,7 +20,7 @@ def performanceProfilingBrute(data):
         code = SurfaceCode(dim)
         result = Verifier._BruteForcestabilizerCheck(code, trial)
         end_time = time.perf_counter()
-        print("ran iter", index)
+        # print("ran iter", index)
         execution_time = end_time - start_time
         bruteTime += execution_time
         data["BruteTime"][index] = execution_time
@@ -76,16 +76,17 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
                 data["BruteTime"].append(0)
                 data["trial_dim"] = dim
                 if solverTime > 3600:
-                    print("BRUTE FORCE RAN OUT AT DIM", dim, "AT STEP", iter, "/", roundsPerDistance)
+                    # print("BRUTE FORCE RAN OUT AT DIM", dim, "AT STEP", iter, "/", roundsPerDistance)
                     flag = False
                     break
                 if elapsedSolver > 10 or elapsedBrute > 10:
-                    print("Brute Solver has taken:", bruteTime)
-                    print("SAT Solver has taken:", solverTime)
-                    print("CALCULATING DISTANCE", dim)
+                    # print("Brute Solver has taken:", bruteTime)
+                    # print("SAT Solver has taken:", solverTime)
+                    # print("CALCULATING DISTANCE", dim)
                     elapsedSolver = 0
                     elapsedBrute = 0
-                print("finished Iter,", iter, "/", roundsPerDistance)
+                ...
+                # print("finished Iter,", iter, "/", roundsPerDistance)
 
             if flag:
                 break
@@ -105,14 +106,15 @@ if __name__ == "__main__":
     output_dir = sys.argv[1]
 
     start_time = time.time()
-    timeout = 60
+    timeout = 6000000000
     i = 0
     while time.time() - start_time < timeout:
         i += 1
-        data = perfomanceProfilingSurfaceCode(10,[3,5], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
+        data = perfomanceProfilingSurfaceCode(5,[3,50], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
         df = pd.DataFrame(data)
         name = output_dir + str(i) + "data.pkl"
         df.to_pickle(name)
+        print("PICKLED")
 
 
 
