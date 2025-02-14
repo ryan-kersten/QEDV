@@ -98,19 +98,20 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
 
 if __name__ == "__main__":
     import seaborn as sns
+    import sys
     import matplotlib.pyplot as plt
     import pandas as pd
 
-    print("HI")
+    output_dir = sys.argv[1]
+
     start_time = time.time()
-    timeout = 60*60*3
+    timeout = 60
     i = 0
     while time.time() - start_time < timeout:
         i += 1
-        data = perfomanceProfilingSurfaceCode(100,[3,50], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
+        data = perfomanceProfilingSurfaceCode(10,[3,5], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
         df = pd.DataFrame(data)
-        name = str(i) + "data.pkl"
-
+        name = output_dir + str(i) + "data.pkl"
         df.to_pickle(name)
 
 
