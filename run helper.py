@@ -74,7 +74,7 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
                 data["time"].append(execution_time)
                 data["Brute"].append(False)
                 data["BruteTime"].append(0)
-                data["trial_dim"] = dim
+                data["trial_dim"].append(dim)
                 if solverTime > 3600:
                     # print("BRUTE FORCE RAN OUT AT DIM", dim, "AT STEP", iter, "/", roundsPerDistance)
                     flag = False
@@ -106,13 +106,13 @@ if __name__ == "__main__":
     output_dir = sys.argv[1]
 
     start_time = time.time()
-    timeout = 6000000000
+    timeout = 10
     i = 0
     while time.time() - start_time < timeout:
         i += 1
         data = perfomanceProfilingSurfaceCode(5,[3,50], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
         df = pd.DataFrame(data)
-        name = output_dir + str(i) + "data.pkl"
+        name = output_dir + '/' + str(i) + "data.pkl"
         df.to_pickle(name)
         print("PICKLED")
 
