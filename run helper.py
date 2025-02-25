@@ -70,7 +70,10 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
                 data["Error Rate"].append(p_err)
                 data["Dimension"].append(dim)
                 data["Solvable"].append(result[0])
-                data["rlimit"].append(result[1].get_key_value('rlimit count'))
+                if result[1] is None:
+                    data["rlimit"].append(0)
+                else:
+                    data["rlimit"].append(result[1].get_key_value('rlimit count'))
                 data["time"].append(execution_time)
                 data["Brute"].append(False)
                 data["BruteTime"].append(0)
@@ -106,7 +109,7 @@ if __name__ == "__main__":
     output_dir = sys.argv[1]
 
     start_time = time.time()
-    timeout = 10
+    timeout = 1000000000
     i = 0
     while time.time() - start_time < timeout:
         i += 1

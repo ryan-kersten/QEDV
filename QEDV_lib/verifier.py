@@ -22,7 +22,7 @@ class Verifier:
     @staticmethod
     def stabalizerCheck(code, error):
         if len(error.qubits) == 0:
-            return True
+            return True, None
         from itertools import combinations
         def getSetsWithElement(listofSets, element):
             toReturn = list()
