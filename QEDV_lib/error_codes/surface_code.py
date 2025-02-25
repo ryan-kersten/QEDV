@@ -5,7 +5,7 @@ from QEDV_lib import ErrorCode, Stabilizer, QuantumError
 
 class SurfaceCode(ErrorCode):
     @staticmethod
-    def _stabalizersFromSurface(n):
+    def _stabalizersFromSurface(n, nonZero = True):
         output = set()
         for row in range(n + 1):
             parity = row % 2

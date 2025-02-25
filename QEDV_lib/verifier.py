@@ -39,7 +39,10 @@ class Verifier:
             return toReturn
 
         setofStabilizers = [element.getQubits() for element in code.getStabilizers()]
-
+        qubitMap = {}
+        for x in range(0, code.getQubits()):
+            name = "qubit" + str(x)
+            qubitMap[x] = Bool(name)
         uniqueElements = set()
         outputClauses = list()
         booleanMap = setsToBooleanMap(setofStabilizers)
@@ -57,21 +60,50 @@ class Verifier:
             parity = 1
             if (element not in error.qubits):
                 parity = 0
-            for lenth in range(parity, len(element_clauses) + 1, 2):
+
+            InConditions = list()
+            notInConditions = list()
+            for lenth in range(0, len(element_clauses) + 1):
                 for ordering in combinations(element_clauses, lenth):
-                    combs.append(ordering)
-            for ordering in combs:
+                    if lenth % 2 == 0:
+                        notInConditions.append(ordering)
+                    else:
+                        InConditions.append(ordering)
+            for ordering in notInConditions:
                 element_clauses = getSetsWithElement(setofStabilizers, element)
                 variables = [booleanMap[frozenset(s)] for s in ordering]
                 for s in ordering:
                     element_clauses.remove(s)
                 variables += [z3.Not(booleanMap[frozenset(s)]) for s in element_clauses]
+                #TODO: add not variable
+                # variables += Not(qubitMap[element])
                 clause = z3.And(*variables)
-                possibleAnswers.append(clause)
+                temp = And(clause,Not(qubitMap[element]))
+                possibleAnswers.append(temp)
+            for ordering in InConditions:
+                element_clauses = getSetsWithElement(setofStabilizers, element)
+                variables = [booleanMap[frozenset(s)] for s in ordering]
+                for s in ordering:
+                    element_clauses.remove(s)
+                variables += [z3.Not(booleanMap[frozenset(s)]) for s in element_clauses]
+                #TODO: add variable
+                clause = z3.And(*variables)
+                temp = And(clause, qubitMap[element])
+                possibleAnswers.append(temp)
             outputClauses.append(z3.Or(*possibleAnswers))
         solver = z3.Solver()
         for clause in outputClauses:
             solver.add(clause)
+        size = code.getQubits()
+        totalElements = set()
+        for element in range(0,size):
+            totalElements.add(element)
+
+        for qubit in error.qubits:
+            solver.add(qubitMap[qubit])
+            totalElements.remove(qubit)
+        for leftOver in totalElements:
+            solver.add(Not(qubitMap[leftOver]))
         if solver.check() == z3.sat:
             return True, solver.statistics()
         return False, solver.statistics()
