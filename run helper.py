@@ -3,8 +3,9 @@ import time
 from QEDV_lib import ErrorCode
 from QEDV_lib import Stabilizer
 import numpy as np
-
+from QEDV_lib.error_code import *
 from QEDV_lib.error_codes import SurfaceCode
+from QEDV_lib.error_codes.bicycle_code import BicycleCode
 from QEDV_lib.verifier import Verifier
 
 
@@ -53,7 +54,7 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
     for p_err in probs:
         for dim in range(Dimensions[0], Dimensions[1], 2):
             print("RUNNING NEW DIMENSION", dim)
-            code = SurfaceCode(dim)
+            code = BicycleCode()
             # check = _checkMatrix(code.getStabilizers(), dim ** 2)
             for iter in range(0, roundsPerDistance):
                 random_error = code.randomError(p_err)
