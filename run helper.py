@@ -6,6 +6,7 @@ import numpy as np
 from QEDV_lib.error_code import *
 from QEDV_lib.error_codes import SurfaceCode
 from QEDV_lib.error_codes.bicycle_code import BicycleCode
+from QEDV_lib.error_codes.surface_codeSTIM import SurfaceCodeStim
 from QEDV_lib.verifier import Verifier
 
 
@@ -52,12 +53,12 @@ def perfomanceProfilingSurfaceCode(roundsPerDistance, Dimensions, probs, keepErr
 
 
     for p_err in probs:
-        for dim in range(Dimensions[0], Dimensions[1], 2):
+        for dim in Dimensions:
             print("RUNNING NEW DIMENSION", dim)
-            code = BicycleCode()
+            code = SurfaceCodeStim(dim)
             # check = _checkMatrix(code.getStabilizers(), dim ** 2)
             for iter in range(0, roundsPerDistance):
-                random_error = code.randomError(p_err)
+                random_error = code.STIMrandomError()
                 if keepErrors:
                     data["trials_test"].append(random_error)
                 else:
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     i = 0
     while time.time() - start_time < timeout:
         i += 1
-        data = perfomanceProfilingSurfaceCode(5,[3,50], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
+        data = perfomanceProfilingSurfaceCode(50,[3,5,7,9,11,13,15,17,19,21,23,25,27], [.001,.01,.05,.1,.2,.35,.3,.25,.5],True)
         df = pd.DataFrame(data)
         name = output_dir + '/' + str(i) + "data.pkl"
         df.to_pickle(name)

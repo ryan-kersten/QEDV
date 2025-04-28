@@ -6,10 +6,18 @@ from QEDV_lib import ErrorCode, Stabilizer, QuantumError
 
 class BicycleCode(ErrorCode):
 
-    def __init__(self):
-        orders = {x: 12, y: 4}
-        poly_a = 1 + y + x * y + x ** 9
-        poly_b = 1 + x ** 2 + x ** 7 + x ** 9 * y ** 2
+    def __init__(self, polynomial):
+
+        if polynomial == 1:
+            orders = {x: 12, y: 4}
+            poly_a = 1 + y + x * y + x ** 9
+            poly_b = 1 + x ** 2 + x ** 7 + x ** 9 * y ** 2
+
+        else:
+            orders = {x: 6, y: 3}
+            poly_a = 1 + y + x * y + x ** 9
+            poly_b = 1 + x ** 2 + x ** 5 + x ** 3 * y ** 2
+
         code = qldpc.codes.BBCode(orders, poly_a, poly_b, field=2)
         stabs = code.get_stabilizer_ops()
 

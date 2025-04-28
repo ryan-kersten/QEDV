@@ -1,5 +1,7 @@
 import random
 
+import stim
+
 from QEDV_lib import ErrorCode, Stabilizer, QuantumError
 
 
@@ -34,3 +36,12 @@ class SurfaceCode(ErrorCode):
         return QuantumError(randomError)
 
 
+    def STIMrandomError(self):
+        surface_code_circuit = stim.Circuit.generated(
+            "surface_code:rotated_memory_x",
+            rounds=9,
+            distance=3,
+            after_clifford_depolarization=0.001,
+            after_reset_flip_probability=0.001,
+            before_measure_flip_probability=0.001,
+            before_round_data_depolarization=0.001)
