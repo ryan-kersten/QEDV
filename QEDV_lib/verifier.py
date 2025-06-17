@@ -94,11 +94,14 @@ def inNaturalizer(setofStabilizers, chosenSolution):
 def minDistance(code,distance):
     # Create variables for SAT- bools representing qubits, X and Z stabilizers
 
-    qubitBoolMap = setsToBooleanMap(code.qubits)
-
+    qubitBoolMap = setsToBooleanMapQubit(list(range(code.qubits)))
+    print("Qubit Map looks like:")
+    print(qubitBoolMap)
     #To find X and Z stabilizers, decode check matrix
+    print("X stab map looks like")
     x_stab_map = setsToBooleanMap(code.x_stab)
-    y_stab_map = setsToBooleanMap(code.z_stab)
+    print(x_stab_map)
+    z_stab_map = setsToBooleanMap(code.z_stab)
 
     #code for generating each of the three requriements. Creating inline to minimize
     #passing around data types
@@ -122,14 +125,15 @@ def minDistance(code,distance):
                 #rest must be false!
                 for qubit in listofQubits:
                     statement.append(Not(qubitBoolMap[qubit]))
-                stabilizerConstaintsList.append(Or(*statement))
+                stabilizerConstaintsList.append(And(*statement))
+        finalZconstaintsList.append(Or(*stabilizerConstaintsList))
     finalZconstaints = And(*finalZconstaintsList)
 
     finalXconstaintsList = list()
     for stabilizer in code.x_stab:
         stabilizerConstaintsList = list()
         combs = []
-        for combinationLength in range(1, len(stabilizer) + 1, 2):
+        for combinationLength in range(1, len(stabilizer) + 1, 1):
             for ordering in combinations(stabilizer, combinationLength):
                 combs.append(ordering)
             for ordering in combs:
@@ -141,36 +145,31 @@ def minDistance(code,distance):
                 # rest must be false!
                 for qubit in listofQubits:
                     statement.append(Not(qubitBoolMap[qubit]))
-                stabilizerConstaintsList.append(Or(*statement))
-    finalXconstaints = And(*finalXconstaintsList)
-    existsNotfinalXconstaints = Not(Exists(x_stab_map.values(),finalXconstaints))
-
-
-
-        """
-        or lenth in range(parity, len(stabalizer) + 1, 2):
-                for ordering in combinations(stabalizer, lenth):
-                    combs.append(ordering)
-            for ordering in combs:
-                temp = list()
-                uniqueEle = stabalizer.copy()
-                for qubit in ordering:
-                    temp.append(qubitBooleanMap[qubit])
-                    uniqueEle.remove(qubit)
-                    # rest have to be false!
-                for qubit in uniqueEle:
-                    temp.append(Not(qubitBooleanMap[qubit]))
-                if parity == 1:
-                    temp.append(booleanMap[frozenset(stabalizer)])
+                if len(ordering) % 2 == 0:
+                    statement.append(Not(x_stab_map[frozenset(stabilizer)]))
                 else:
-                    temp.append(Not(booleanMap[frozenset(stabalizer)]))
-                clause = z3.And(*temp)
-                errorsMakeParity2.append(clause)
-        errorsMakeParity[frozenset(stabalizer)] = z3.Or(*errorsMakeParity2)
-        """
+                    statement.append(x_stab_map[frozenset(stabilizer)])
 
+                stabilizerConstaintsList.append(And(*statement))
+        finalXconstaintsList.append(Or(*stabilizerConstaintsList))
+    finalXconstaints = And(*finalXconstaintsList)
+    existsNotfinalXconstaints = Not(Exists(list(x_stab_map.values()),finalXconstaints))
+    solver = z3.Solver()
 
+    solver.add(existsNotfinalXconstaints)
+    solver.add(finalZconstaints)
+    solver.add(maxDistanceConstraints)
+    #D
+    print("doesn't exists product of stabilizers")
+    print(existsNotfinalXconstaints)
+    #Results in a logical error
+    print("Results in a logical error")
+    print(finalZconstaints)
 
+    if solver.check() == z3.sat:
+        print(solver.model())
+        return True
+    return False
 
 
 

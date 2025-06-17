@@ -5,11 +5,11 @@ class ErrorCode(ABC):
 
     def __init__(self):
         self.x_stab = {}
-        self.y_stab = {}
+        self.z_stab = {}
         self.qubits = 0
 
 
-
+    @staticmethod
     def checkToStab(checkMatrix):
         toReturn = []
         for row in checkMatrix:

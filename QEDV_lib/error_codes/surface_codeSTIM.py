@@ -43,18 +43,19 @@ class SurfaceCodeStim(ErrorCode):
                 output.append(Stabilizer(temp))
         return output
 
-    def __init__(self, distance):
+    def __init__(self, distance,p_err):
         self.stabilizers = self._stabalizersFromSurface(distance)
         self.dist = distance
         self.qubits = distance**2
+
         self.surface_code_circuit = stim.Circuit.generated(
             "surface_code:rotated_memory_x",
             rounds= distance*3,
             distance=distance,
-            after_clifford_depolarization=0.001,
-            after_reset_flip_probability=0.001,
-            before_measure_flip_probability=0.001,
-            before_round_data_depolarization=0.001)
+            after_clifford_depolarization=p_err,
+            after_reset_flip_probability=p_err,
+            before_measure_flip_probability=p_err,
+            before_round_data_depolarization=p_err)
         self.sampler = self.surface_code_circuit.compile_detector_sampler()
         self.numStab = len(self.stabilizers)
         self.curShot = 0
