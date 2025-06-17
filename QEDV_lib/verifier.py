@@ -1,103 +1,3 @@
-from itertools import combinations
-
-from QEDV_lib import ErrorCode, QuantumError, Stabilizer
-from z3 import *
-
-class Verifier:
-    @staticmethod
-    def parityChecker(stabalizers, error):
-        if not isinstance(stabalizers, set) or not all(isinstance(s, Stabilizer) for s in stabalizers):
-            raise TypeError("'code' must be a set of Stabilizers")
-        if not isinstance(error, QuantumError):
-            raise TypeError("'error' must be an error.")
-        for index, stabilizer in enumerate(stabalizers):
-            parity = 0
-            for qubit in stabilizer.qubits:
-                if qubit in error.qubits:
-                    parity ^= 1
-            if parity is not stabilizer.parity:
-                return False
-        return True
-
-    @staticmethod
-    def stabalizerCheck(code, error):
-        if len(error.qubits) == 0:
-            return True, None
-        from itertools import combinations
-        def getSetsWithElement(listofSets, element):
-            toReturn = list()
-            for set in listofSets:
-                if element in set:
-                    toReturn.append(set)
-            return toReturn
-
-        def setsToBooleanMap(listofSets):
-            toReturn = dict()
-            for temp in listofSets:
-                key = frozenset(temp)
-                toReturn[key] = Bool(f"set_{'_'.join(map(str, temp))}")
-            return toReturn
-
-        setofStabilizers = [element.getQubits() for element in code.getStabilizers()]
-
-        uniqueElements = set()
-        outputClauses = list()
-        booleanMap = setsToBooleanMap(setofStabilizers)
-        for qubit in error.qubits:
-            uniqueElements.add(qubit)
-            assert isinstance(qubit, int)
-        for stabilizer in setofStabilizers:
-            for qubit in stabilizer:
-                uniqueElements.add(qubit)
-                assert isinstance(qubit, int)
-        for element in uniqueElements:
-            element_clauses = getSetsWithElement(setofStabilizers, element)
-            combs = list()
-            possibleAnswers = list()
-            parity = 1
-            if (element not in error.qubits):
-                parity = 0
-            for lenth in range(parity, len(element_clauses) + 1, 2):
-                for ordering in combinations(element_clauses, lenth):
-                    combs.append(ordering)
-            for ordering in combs:
-                element_clauses = getSetsWithElement(setofStabilizers, element)
-                variables = [booleanMap[frozenset(s)] for s in ordering]
-                for s in ordering:
-                    element_clauses.remove(s)
-                variables += [z3.Not(booleanMap[frozenset(s)]) for s in element_clauses]
-                clause = z3.And(*variables)
-                possibleAnswers.append(clause)
-            outputClauses.append(z3.Or(*possibleAnswers))
-        solver = z3.Solver()
-        for clause in outputClauses:
-            solver.add(clause)
-        if solver.check() == z3.sat:
-            return True, solver.statistics()
-        return False, solver.statistics()
-    @staticmethod
-    def _BruteForcestabilizerCheck(code, error):
-        for r in range(len(code.getStabilizers()) + 1):
-            gen = combinations(code.getStabilizers(), r)
-            for possibleSolution in gen:
-                failed = False
-                for element in range(code.getQubits()):
-                    parity = 0
-                    for setA in possibleSolution:
-                        if element in setA.qubits:
-                            parity += 1
-                    parity = parity % 2
-                    if element in error.qubits and parity == 0:
-                        failed = True
-                        break
-                    if element not in error.qubits and parity == 1:
-                        failed = True
-                        break
-                if not failed:
-                    return True
-        return False
-
-
 import itertools
 from re import error
 
@@ -153,6 +53,9 @@ def setsToBooleanMap(listofSets):
         key = frozenset(set)
         toReturn[key] = Bool(f"set_{'_'.join(map(str, set))}")
     return toReturn
+    #To find stabilizers check, decode check matrix from code
+
+
 
 
 def makeCheck(stab, length):
@@ -187,6 +90,90 @@ def stabalizersFromSurface(n):
 
 def inNaturalizer(setofStabilizers, chosenSolution):
     ...
+
+def minDistance(code,distance):
+    # Create variables for SAT- bools representing qubits, X and Z stabilizers
+
+    qubitBoolMap = setsToBooleanMap(code.qubits)
+
+    #To find X and Z stabilizers, decode check matrix
+    x_stab_map = setsToBooleanMap(code.x_stab)
+    y_stab_map = setsToBooleanMap(code.z_stab)
+
+    #code for generating each of the three requriements. Creating inline to minimize
+    #passing around data types
+
+    maxDistanceConstraints = Sum([If(x, 1, 0) for x in qubitBoolMap.values()]) <= distance
+
+    #Product of Z stabilizers
+    finalZconstaintsList = list()
+    for stabilizer in code.z_stab:
+        stabilizerConstaintsList = list()
+        combs = []
+        for combinationLength in range(0,len(stabilizer)+1, 2):
+            for ordering in combinations(stabilizer, combinationLength):
+                combs.append(ordering)
+            for ordering in combs:
+                listofQubits = stabilizer.copy()
+                statement = list()
+                for qubit in ordering:
+                    statement.append(qubitBoolMap[qubit])
+                    listofQubits.remove(qubit)
+                #rest must be false!
+                for qubit in listofQubits:
+                    statement.append(Not(qubitBoolMap[qubit]))
+                stabilizerConstaintsList.append(Or(*statement))
+    finalZconstaints = And(*finalZconstaintsList)
+
+    finalXconstaintsList = list()
+    for stabilizer in code.x_stab:
+        stabilizerConstaintsList = list()
+        combs = []
+        for combinationLength in range(1, len(stabilizer) + 1, 2):
+            for ordering in combinations(stabilizer, combinationLength):
+                combs.append(ordering)
+            for ordering in combs:
+                listofQubits = stabilizer.copy()
+                statement = list()
+                for qubit in ordering:
+                    statement.append(qubitBoolMap[qubit])
+                    listofQubits.remove(qubit)
+                # rest must be false!
+                for qubit in listofQubits:
+                    statement.append(Not(qubitBoolMap[qubit]))
+                stabilizerConstaintsList.append(Or(*statement))
+    finalXconstaints = And(*finalXconstaintsList)
+    existsNotfinalXconstaints = Not(Exists(x_stab_map.values(),finalXconstaints))
+
+
+
+        """
+        or lenth in range(parity, len(stabalizer) + 1, 2):
+                for ordering in combinations(stabalizer, lenth):
+                    combs.append(ordering)
+            for ordering in combs:
+                temp = list()
+                uniqueEle = stabalizer.copy()
+                for qubit in ordering:
+                    temp.append(qubitBooleanMap[qubit])
+                    uniqueEle.remove(qubit)
+                    # rest have to be false!
+                for qubit in uniqueEle:
+                    temp.append(Not(qubitBooleanMap[qubit]))
+                if parity == 1:
+                    temp.append(booleanMap[frozenset(stabalizer)])
+                else:
+                    temp.append(Not(booleanMap[frozenset(stabalizer)]))
+                clause = z3.And(*temp)
+                errorsMakeParity2.append(clause)
+        errorsMakeParity[frozenset(stabalizer)] = z3.Or(*errorsMakeParity2)
+        """
+
+
+
+
+
+
 
 
 def containsCommute(code, error):

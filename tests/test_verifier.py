@@ -6,8 +6,7 @@ import numpy as np
 
 from QEDV_lib import Stabilizer, ErrorCode, QuantumError
 from QEDV_lib.error_codes import SurfaceCode
-from QEDV_lib.verifier import Verifier
-
+from QEDV_lib import verifier
 
 class testStabalizer(unittest.TestCase):
     def setUp(self):
@@ -45,7 +44,7 @@ class testStabalizer(unittest.TestCase):
                 python_int_list = [int(x) for x in flattened]
                 result_set = {index for index, value in enumerate(python_int_list) if value == 1}
                 error = QuantumError(result_set)
-                brute = Verifier._BruteForcestabilizerCheck(code, error)
-                reduction =  Verifier.stabalizerCheck(code, error)[0]
+                brute = verifier._BruteForcestabilizerCheck(code, error)
+                reduction =  verifier.stabalizerCheck(code, error)[0]
                 self.assertTrue(brute is reduction)
 

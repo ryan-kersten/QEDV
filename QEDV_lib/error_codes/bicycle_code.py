@@ -21,15 +21,7 @@ class BicycleCode(ErrorCode):
         code = qldpc.codes.BBCode(orders, poly_a, poly_b, field=2)
         stabs = code.get_stabilizer_ops()
 
-        def checkToStab(checkMatrix):
-            toReturn = []
-            for row in checkMatrix:
-                stabalizer = set()
-                for index, entry in enumerate(row):
-                    if entry != 0:
-                        stabalizer.add(index)
-                toReturn.append(Stabilizer(stabalizer))
-            return toReturn
+
         self.stabilizers = checkToStab(stabs)
         self.qubits = len(stabs[0])
 

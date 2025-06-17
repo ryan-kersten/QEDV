@@ -2,7 +2,7 @@ import random
 
 import stim
 
-from QEDV_lib import ErrorCode, Stabilizer, QuantumError
+from QEDV_lib import ErrorCode, QuantumError
 
 
 class SurfaceCode(ErrorCode):
@@ -21,7 +21,7 @@ class SurfaceCode(ErrorCode):
                 if (row > 0 and row < n):
                     temp.add(i * 2 + parity + n + rowOffset)
                     temp.add(i * 2 + parity + n + 1 + rowOffset)
-                output.add(Stabilizer(temp))
+                output.add(temp)
         return output
 
     def __init__(self, distance):
