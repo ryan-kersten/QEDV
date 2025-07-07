@@ -90,6 +90,14 @@ def stabalizersFromSurface(n):
 
 def inNaturalizer(setofStabilizers, chosenSolution):
     ...
+#Given a set list, returns list of sets that contain the provided element
+def elementInSetList(list,element):
+    finalList = []
+    for set in list:
+        if element in set:
+            finalList.append(set.copy())
+    print("returning from elelmentInSetList with set", finalList)
+    return finalList
 
 def minDistance(code,distance):
     # Create variables for SAT- bools representing qubits, X and Z stabilizers
@@ -130,46 +138,60 @@ def minDistance(code,distance):
     finalZconstaints = And(*finalZconstaintsList)
 
     finalXconstaintsList = list()
-    for stabilizer in code.x_stab:
-        stabilizerConstaintsList = list()
-        combs = []
-        for combinationLength in range(1, len(stabilizer) + 1, 1):
-            for ordering in combinations(stabilizer, combinationLength):
-                combs.append(ordering)
-            for ordering in combs:
-                listofQubits = stabilizer.copy()
-                statement = list()
-                for qubit in ordering:
-                    statement.append(qubitBoolMap[qubit])
-                    listofQubits.remove(qubit)
-                # rest must be false!
-                for qubit in listofQubits:
-                    statement.append(Not(qubitBoolMap[qubit]))
-                if len(ordering) % 2 == 0:
-                    statement.append(Not(x_stab_map[frozenset(stabilizer)]))
-                else:
-                    statement.append(x_stab_map[frozenset(stabilizer)])
-
-                stabilizerConstaintsList.append(And(*statement))
-        finalXconstaintsList.append(Or(*stabilizerConstaintsList))
-    finalXconstaints = And(*finalXconstaintsList)
-    existsNotfinalXconstaints = Not(Exists(list(x_stab_map.values()),finalXconstaints))
+    for qubit in range(code.qubits):
+        for parity in {0,1}:
+            for stabilizer in elementInSetList(code.x_stab,qubit):
+                print("qubit vlaue is", qubit)
+                print("stab value is", stabilizer)
+                stabilizer.remove(qubit)
+                stabilizerConstaintsList = list()
+                combs = []
+                ##maybe one more, how removing qubit impacts this
+                for combinationLength in range(parity, len(stabilizer) + 1, 2):
+                    for ordering in combinations(stabilizer, combinationLength):
+                        combs.append(ordering)
+                    for ordering in combs:
+                        listofQubits = stabilizer.copy()
+                        statement = list()
+                        for qubitOrder in ordering:
+                            statement.append(qubitBoolMap[qubitOrder])
+                            listofQubits.remove(qubitOrder)
+                        # rest must be false!
+                        for qubitOrder in listofQubits:
+                            statement.append(Not(qubitBoolMap[qubitOrder]))
+                        stabilizerConstaintsList.append(And(*statement))
+                qubitVar = qubitBoolMap[qubit]
+                if parity == 1:
+                    qubitVar = Not(qubitVar)
+                finalXconstaintsList.append(Implies(qubitVar,Or(*stabilizerConstaintsList)))
+    finalXconstaints = 8 (*finalXconstaintsList)
     solver = z3.Solver()
 
-    solver.add(existsNotfinalXconstaints)
+    solver.add(finalXconstaints)
     solver.add(finalZconstaints)
     solver.add(maxDistanceConstraints)
+    noTrivial = []
+    for qubitR in range(code.qubits):
+        noTrivial.append(qubitBoolMap[qubitR])
+    solver.add(Or(*noTrivial))
+
     #D
     print("doesn't exists product of stabilizers")
-    print(existsNotfinalXconstaints)
+    print(finalXconstaints)
     #Results in a logical error
     print("Results in a logical error")
     print(finalZconstaints)
+    print("non trivial")
+    print(noTrivial)
 
     if solver.check() == z3.sat:
         print(solver.model())
         return True
     return False
+
+
+def gottesmans(checkMatrix):
+    print(checkMatrix.rref())
 
 
 
