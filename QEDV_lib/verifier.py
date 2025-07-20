@@ -99,6 +99,18 @@ def elementInSetList(list,element):
     print("returning from elelmentInSetList with set", finalList)
     return finalList
 
+def distSearch(code):
+    low = 5
+    high = 50
+    while low < high:
+        mid = (low + high) // 2
+        if minDistance(code, mid):
+            high = mid
+        else:
+            low = mid + 1
+    print("Lowest Distance found = ", low)
+    return low
+
 def minDistance(code,distance):
     # Create variables for SAT- bools representing qubits, X and Z stabilizers
 
@@ -160,11 +172,11 @@ def minDistance(code,distance):
                         for qubitOrder in listofQubits:
                             statement.append(Not(qubitBoolMap[qubitOrder]))
                         stabilizerConstaintsList.append(And(*statement))
-                qubitVar = qubitBoolMap[qubit]
+                qubitVar = Not(qubitBoolMap[qubit])
                 if parity == 1:
-                    qubitVar = Not(qubitVar)
+                    qubitVar = qubitVar
                 finalXconstaintsList.append(Implies(qubitVar,Or(*stabilizerConstaintsList)))
-    finalXconstaints = 8 (*finalXconstaintsList)
+    finalXconstaints = z3.And(*finalXconstaintsList)
     solver = z3.Solver()
 
     solver.add(finalXconstaints)
