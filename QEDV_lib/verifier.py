@@ -150,33 +150,37 @@ def minDistance(code,distance):
     finalZconstaints = And(*finalZconstaintsList)
 
     finalXconstaintsList = list()
-    for qubit in range(code.qubits):
-        for parity in {0,1}:
-            for stabilizer in elementInSetList(code.x_stab,qubit):
-                print("qubit vlaue is", qubit)
-                print("stab value is", stabilizer)
-                stabilizer.remove(qubit)
-                stabilizerConstaintsList = list()
-                combs = []
-                ##maybe one more, how removing qubit impacts this
-                for combinationLength in range(parity, len(stabilizer) + 1, 2):
-                    for ordering in combinations(stabilizer, combinationLength):
-                        combs.append(ordering)
-                    for ordering in combs:
-                        listofQubits = stabilizer.copy()
-                        statement = list()
-                        for qubitOrder in ordering:
-                            statement.append(qubitBoolMap[qubitOrder])
-                            listofQubits.remove(qubitOrder)
-                        # rest must be false!
-                        for qubitOrder in listofQubits:
-                            statement.append(Not(qubitBoolMap[qubitOrder]))
-                        stabilizerConstaintsList.append(And(*statement))
-                qubitVar = Not(qubitBoolMap[qubit])
-                if parity == 1:
-                    qubitVar = qubitVar
-                finalXconstaintsList.append(Implies(qubitVar,Or(*stabilizerConstaintsList)))
-    finalXconstaints = z3.And(*finalXconstaintsList)
+    setofStabilizers = code.x_stab.copy()
+
+    numberQubits = len(setofStabilizers)
+    searchEnd = 2 ** (len(setofStabilizers) - 1)
+    begin = 0
+
+
+    print("need to get to value", searchEnd)
+    while begin <= searchEnd:
+        statementToadd= list()
+        newList = setofStabilizers.copy()
+        removeElement = list()
+        for index in range(0, len(setofStabilizers)):
+            if(is_nth_byte_zero(begin,index)):
+                removeElement.append(index)
+        removeElement.sort(reverse=True)
+        for dele in removeElement:
+            newList.pop(dele)
+        for qubit in range(0, code.qubits):
+            element_clauses = getSetsWithElement(newList, qubit)
+            if len(element_clauses)%2 == 1:
+                statementToadd.append(qubitBoolMap[qubit])
+            else:
+                statementToadd.append(Not(qubitBoolMap[qubit]))
+        finalXconstaintsList.append(And(*statementToadd))
+        begin += 1
+
+
+    finalXconstaints = z3.Or(*finalXconstaintsList)
+
+
     solver = z3.Solver()
 
     solver.add(finalXconstaints)
@@ -206,6 +210,8 @@ def gottesmans(checkMatrix):
     print(checkMatrix.rref())
 
 
+def is_nth_byte_zero(value: int, n: int) -> bool:
+    return ((value >> (8 * n)) & 0xFF) == 0
 
 
 
